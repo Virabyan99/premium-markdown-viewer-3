@@ -13,6 +13,8 @@ export default function HomePage() {
   const [lexicalJson, setLexicalJson] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragCounter, setDragCounter] = useState(0);
 
   useEffect(() => {
     if (!rawMarkdown) return;
@@ -33,8 +35,58 @@ export default function HomePage() {
     }
   }, [rawMarkdown]);
 
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragCounter((prev) => {
+      const newCount = prev + 1;
+      if (newCount === 1) {
+        setIsDragging(true);
+      }
+      return newCount;
+    });
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragCounter((prev) => {
+      const newCount = prev - 1;
+      if (newCount === 0) {
+        setIsDragging(false);
+      }
+      return newCount;
+    });
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    setDragCounter(0);
+    const file = e.dataTransfer.files[0];
+    processFile(file);
+  };
+
+  const processFile = (file: File) => {
+    if (!file.name.endsWith('.md')) {
+      alert('Please upload a .md file only.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => setRawMarkdown(reader.result as string);
+    reader.readAsText(file);
+  };
+
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-8">
+    <main
+      className={`min-h-screen flex flex-col items-center justify-center p-8`}
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+    >
       <div className="w-full max-w-4xl space-y-6">
         {!lexicalJson && <FileDrop onFileRead={setRawMarkdown} />}
         {loading && (
