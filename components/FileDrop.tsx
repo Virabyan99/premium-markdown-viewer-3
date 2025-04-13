@@ -5,7 +5,7 @@ import { useRef } from 'react';
 export default function FileDrop({
   onFileRead,
 }: {
-  onFileRead: (content: string) => void;
+  onFileRead: (content: string, filename: string) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -20,7 +20,7 @@ export default function FileDrop({
       return;
     }
     const reader = new FileReader();
-    reader.onload = () => onFileRead(reader.result as string);
+    reader.onload = () => onFileRead(reader.result as string, file.name);
     reader.readAsText(file);
   };
 

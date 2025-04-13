@@ -92,6 +92,8 @@ export default function LexicalViewer({ json }: { json: string }) {
   const pageRefs = useRef<(HTMLDivElement | null)[]>([]);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
+  
+
   let parsedState;
   try {
     parsedState = JSON.parse(json);
@@ -131,6 +133,8 @@ export default function LexicalViewer({ json }: { json: string }) {
 
   const initialVisiblePages = Array.from({ length: Math.min(3, pageCount) }, (_, i) => i);
   const [visiblePages, setVisiblePages] = useState<number[]>(initialVisiblePages);
+
+  
 
   useEffect(() => {
     const observer = new IntersectionObserver(
