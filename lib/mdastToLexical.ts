@@ -1,5 +1,23 @@
 // lib/mdastToLexical.ts
 import { Root, RootContent } from 'mdast';
+import Prism from 'prismjs';
+import 'prismjs/components/prism-javascript';
+import 'prismjs/components/prism-typescript';
+import 'prismjs/components/prism-python';
+import 'prismjs/components/prism-java';
+import 'prismjs/components/prism-c';
+import 'prismjs/components/prism-cpp';
+import 'prismjs/components/prism-csharp';
+import 'prismjs/components/prism-go';
+import 'prismjs/components/prism-rust';
+import 'prismjs/components/prism-markup'; // Replaced prism-html
+import 'prismjs/components/prism-css';
+import 'prismjs/components/prism-json';
+import 'prismjs/components/prism-yaml';
+import 'prismjs/components/prism-markdown';
+import 'prismjs/components/prism-bash';
+
+// Add more languages as needed
 
 export function mdastToLexicalJson(mdast: Root): string {
   const root = {
@@ -61,8 +79,8 @@ export function mdastToLexicalJson(mdast: Root): string {
       children: listNode.children.map((item: any, index: number) => {
         const listItem = {
           type: 'listitem',
-          value: index + 1, // Lexical uses this for ordered lists
-          checked: undefined, // For checklists; undefined since we don't use them
+          value: index + 1,
+          checked: undefined,
           format: '',
           indent: indentLevel,
           version: 1,
@@ -81,7 +99,6 @@ export function mdastToLexicalJson(mdast: Root): string {
             };
             listItem.children.push(paragraph);
           } else if (child.type === 'list') {
-            // Recursively process nested lists
             const nestedList = processList(child, indentLevel + 1);
             listItem.children.push(nestedList);
           }
@@ -119,33 +136,28 @@ export function mdastToLexicalJson(mdast: Root): string {
         break;
 
       case 'code':
-        const codeNode = {
-          type: 'code',
-          language: node.lang || 'plaintext',
-          format: '',
-          indent: 0,
+        const lang = node.lang || 'text'; // Default to 'text' if no language
+        const code = node.value;
+        let html = '';
+        try {
+          const highlightedCode = Prism.highlight(code, Prism.languages[lang] || Prism.languages.text, lang);
+          html = `<pre><code class="language-${lang}">${highlightedCode}</code></pre>`;
+        } catch (err) {
+          console.error('Error highlighting code:', err);
+          html = `<pre><code>${code}</code></pre>`;
+        }
+        const prismNode = {
+          type: 'prism-code',
+          html: html,
           version: 1,
-          direction: 'ltr',
-          children: [
-            {
-              type: 'text',
-              text: node.value,
-              format: 0,
-              mode: 'normal',
-              style: '',
-              version: 1,
-            },
-          ],
         };
-        root.children.push(codeNode);
+        root.children.push(prismNode);
         break;
 
       case 'list':
         const listNode = processList(node, 0);
         root.children.push(listNode);
         break;
-
-      // Add 'table' support here in the future if needed
     }
   });
 

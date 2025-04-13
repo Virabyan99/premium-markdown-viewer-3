@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "prismjs/themes/prism-okaidia.css"; /* Add this line for beautiful highlighting */
 
 @custom-variant dark (&:is(.dark *));
 
@@ -118,5 +119,12 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+
+  pre {
+    @apply bg-gray-800 text-white p-4 my-4 rounded-lg overflow-x-auto;
+  }
+  code {
+    @apply font-mono text-sm;
   }
 }

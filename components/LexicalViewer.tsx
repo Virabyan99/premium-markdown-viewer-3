@@ -8,15 +8,59 @@ import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
 import { HeadingNode } from '@lexical/rich-text';
-import { CodeNode } from '@lexical/code';
 import { ListNode, ListItemNode } from '@lexical/list';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { DecoratorNode, LexicalNode, NodeKey } from 'lexical';
 
+// Custom PrismCodeNode
+export class PrismCodeNode extends DecoratorNode<React.ReactNode> {
+  __html: string;
+
+  static getType(): string {
+    return 'prism-code';
+  }
+
+  static clone(node: PrismCodeNode): PrismCodeNode {
+    return new PrismCodeNode(node.__html, node.__key);
+  }
+
+  constructor(html: string, key?: NodeKey) {
+    super(key);
+    this.__html = html;
+  }
+
+  createDOM(): HTMLElement {
+    const div = document.createElement('div');
+    div.innerHTML = this.__html;
+    return div;
+  }
+
+  updateDOM(): false {
+    return false;
+  }
+
+  decorate(): React.ReactNode {
+    return <div dangerouslySetInnerHTML={{ __html: this.__html }} />;
+  }
+
+  static importJSON(serializedNode: any): PrismCodeNode {
+    return $createPrismCodeNode(serializedNode.html);
+  }
+}
+
+export function $createPrismCodeNode(html: string): PrismCodeNode {
+  return new PrismCodeNode(html);
+}
+
+export function $isPrismCodeNode(node: LexicalNode | null | undefined): node is PrismCodeNode {
+  return node instanceof PrismCodeNode;
+}
+
+// Theme without code styling (Prism.js handles it)
 const theme = {
   paragraph: 'mb-4',
   heading: { h1: 'text-3xl font-bold mb-4', h2: 'text-2xl font-semibold mb-3' },
   text: { bold: 'font-bold', italic: 'italic' },
-  code: 'bg-gray-800 text-white p-2 rounded block font-mono text-sm',
   list: { ul: 'list-disc pl-6', ol: 'list-decimal pl-6' },
 };
 
@@ -137,7 +181,7 @@ export default function LexicalViewer({ json }: { json: string }) {
                   initialConfig={{
                     namespace: `Page${idx}`,
                     theme,
-                    nodes: [HeadingNode, CodeNode, ListNode, ListItemNode],
+                    nodes: [HeadingNode, ListNode, ListItemNode, PrismCodeNode],
                     editable: false,
                     onError: console.error,
                   }}
