@@ -15,8 +15,8 @@ export default function FileDrop({
   };
 
   const processFile = (file: File) => {
-    if (!file.name.endsWith('.md')) {
-      alert('Please upload a .md file only.');
+    if (!file.name.endsWith('.md') && !file.name.endsWith('.txt')) {
+      alert('Please upload a .md or .txt file only.');
       return;
     }
     const reader = new FileReader();
@@ -33,7 +33,7 @@ export default function FileDrop({
       />
       <input
         type="file"
-        accept=".md"
+        accept=".md,.txt"
         ref={inputRef}
         onChange={handleChange}
         className="hidden"

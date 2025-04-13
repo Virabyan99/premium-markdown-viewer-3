@@ -78,14 +78,14 @@ export default function HomePage() {
       e.preventDefault();
       setIsDragging(false);
       const file = e.dataTransfer.files[0];
-      if (file && file.name.endsWith('.md')) {
+      if (file && (file.name.endsWith('.md') || file.name.endsWith('.txt'))) {
         const reader = new FileReader();
         reader.onload = () => {
           handleFileRead(reader.result as string, file.name);
         };
         reader.readAsText(file);
       } else {
-        alert('Please drop a .md file only.');
+        alert('Please drop a .md or .txt file only.');
       }
     };
 
