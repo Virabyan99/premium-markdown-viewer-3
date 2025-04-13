@@ -9,10 +9,14 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@fontsource/noto-sans-jp": "^5.2.5",
+    "@fontsource/noto-sans-kr": "^5.2.5",
+    "@fontsource/noto-sans-sc": "^5.2.5",
     "@lexical/react": "^0.30.0",
     "@radix-ui/react-slot": "^1.2.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "franc": "^6.2.0",
     "lexical": "^0.30.0",
     "lucide-react": "^0.487.0",
     "mdast": "^2.3.2",

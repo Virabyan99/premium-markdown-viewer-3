@@ -113,6 +113,14 @@
   --sidebar-ring: oklch(0.551 0.027 264.364);
 }
 
+.prose {
+  line-height: 1.75; /* Adjust as needed */
+  letter-spacing: -0.01em; /* Slight kerning adjustment */
+}
+.font-kr, .font-jp, .font-sc {
+  line-height: 1.6; /* Tighter line height for CJK languages */
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

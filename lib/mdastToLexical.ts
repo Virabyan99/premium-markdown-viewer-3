@@ -1,6 +1,6 @@
-// lib/mdastToLexical.ts
 import { Root, RootContent } from 'mdast';
 import Prism from 'prismjs';
+import { franc } from 'franc';
 import 'prismjs/components/prism-javascript';
 import 'prismjs/components/prism-typescript';
 import 'prismjs/components/prism-python';
@@ -10,14 +10,12 @@ import 'prismjs/components/prism-cpp';
 import 'prismjs/components/prism-csharp';
 import 'prismjs/components/prism-go';
 import 'prismjs/components/prism-rust';
-import 'prismjs/components/prism-markup'; // Replaced prism-html
+import 'prismjs/components/prism-markup';
 import 'prismjs/components/prism-css';
 import 'prismjs/components/prism-json';
 import 'prismjs/components/prism-yaml';
 import 'prismjs/components/prism-markdown';
 import 'prismjs/components/prism-bash';
-
-// Add more languages as needed
 
 export function mdastToLexicalJson(mdast: Root): string {
   const root = {
@@ -29,42 +27,85 @@ export function mdastToLexicalJson(mdast: Root): string {
     children: [],
   };
 
-  // Helper function to process inline nodes (text, strong, emphasis)
   const processInline = (children: RootContent[]): any[] => {
     return children.flatMap((child) => {
       if (child.type === 'text') {
+        const text = child.value;
+        const lang = franc(text);
+        let fontClass = '';
+
+        if (lang === 'kor') {
+          fontClass = 'font-kr';
+        } else if (lang === 'jpn') {
+          fontClass = 'font-jp';
+        } else if (lang === 'zho') {
+          fontClass = 'font-sc';
+        } else {
+          fontClass = 'font-sans';
+        }
+
         return [{
-          type: 'text',
-          text: child.value,
+          type: 'custom-text',
+          text: text,
+          className: fontClass,
           format: 0,
           mode: 'normal',
           style: '',
           version: 1,
         }];
       } else if (child.type === 'strong') {
-        return child.children.map((c) => ({
-          type: 'text',
+        const text = child.children.map((c: any) => c.value).join('');
+        const lang = franc(text);
+        let fontClass = '';
+
+        if (lang === 'kor') {
+          fontClass = 'font-kr';
+        } else if (lang === 'jpn') {
+          fontClass = 'font-jp';
+        } else if (lang === 'zho') {
+          fontClass = 'font-sc';
+        } else {
+          fontClass = 'font-sans';
+        }
+
+        return child.children.map((c: any) => ({
+          type: 'custom-text',
           text: c.value,
+          className: fontClass,
           format: 1, // bold
           mode: 'normal',
           style: '',
           version: 1,
         }));
       } else if (child.type === 'emphasis') {
-        return child.children.map((c) => ({
-          type: 'text',
+        const text = child.children.map((c: any) => c.value).join('');
+        const lang = franc(text);
+        let fontClass = '';
+
+        if (lang === 'kor') {
+          fontClass = 'font-kr';
+        } else if (lang === 'jpn') {
+          fontClass = 'font-jp';
+        } else if (lang === 'zho') {
+          fontClass = 'font-sc';
+        } else {
+          fontClass = 'font-sans';
+        }
+
+        return child.children.map((c: any) => ({
+          type: 'custom-text',
           text: c.value,
+          className: fontClass,
           format: 2, // italic
           mode: 'normal',
           style: '',
           version: 1,
         }));
       }
-      return []; // Ignore other inline types for now
+      return [];
     });
   };
 
-  // Helper function to process lists recursively
   const processList = (listNode: any, indentLevel: number): any => {
     const listType = listNode.ordered ? 'number' : 'bullet';
     return {
@@ -136,7 +177,7 @@ export function mdastToLexicalJson(mdast: Root): string {
         break;
 
       case 'code':
-        const lang = node.lang || 'text'; // Default to 'text' if no language
+        const lang = node.lang || 'text';
         const code = node.value;
         let html = '';
         try {

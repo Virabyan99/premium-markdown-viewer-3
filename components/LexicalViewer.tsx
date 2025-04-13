@@ -1,4 +1,3 @@
-// components/LexicalViewer.tsx
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
@@ -11,8 +10,9 @@ import { HeadingNode } from '@lexical/rich-text';
 import { ListNode, ListItemNode } from '@lexical/list';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DecoratorNode, LexicalNode, NodeKey } from 'lexical';
+import { CustomTextNode } from './CustomTextNode'; // Import the custom node
 
-// Custom PrismCodeNode
+// PrismCodeNode (unchanged)
 export class PrismCodeNode extends DecoratorNode<React.ReactNode> {
   __html: string;
 
@@ -56,7 +56,6 @@ export function $isPrismCodeNode(node: LexicalNode | null | undefined): node is 
   return node instanceof PrismCodeNode;
 }
 
-// Theme without code styling (Prism.js handles it)
 const theme = {
   paragraph: 'mb-4',
   heading: { h1: 'text-3xl font-bold mb-4', h2: 'text-2xl font-semibold mb-3' },
@@ -181,7 +180,7 @@ export default function LexicalViewer({ json }: { json: string }) {
                   initialConfig={{
                     namespace: `Page${idx}`,
                     theme,
-                    nodes: [HeadingNode, ListNode, ListItemNode, PrismCodeNode],
+                    nodes: [HeadingNode, ListNode, ListItemNode, PrismCodeNode, CustomTextNode], // Add CustomTextNode
                     editable: false,
                     onError: console.error,
                   }}
