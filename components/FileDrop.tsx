@@ -15,13 +15,18 @@ export default function FileDrop({
   };
 
   const processFile = (file: File) => {
+    const MAX_FILE_SIZE = 500_000; // 500 KB
+    if (file.size > MAX_FILE_SIZE) {
+      alert('File is too large. Max allowed size is 500KB.');
+      return;
+    }
     if (!file.name.endsWith('.md') && !file.name.endsWith('.txt')) {
       alert('Please upload a .md or .txt file only.');
       return;
     }
     const reader = new FileReader();
     reader.onload = () => onFileRead(reader.result as string, file.name);
-    reader.readAsText(file);
+    reader.readAsText(file, 'utf-8'); // Enforce UTF-8 encoding
   };
 
   return (

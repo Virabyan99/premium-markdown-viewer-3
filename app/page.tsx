@@ -78,14 +78,21 @@ export default function HomePage() {
       e.preventDefault();
       setIsDragging(false);
       const file = e.dataTransfer.files[0];
-      if (file && (file.name.endsWith('.md') || file.name.endsWith('.txt'))) {
-        const reader = new FileReader();
-        reader.onload = () => {
-          handleFileRead(reader.result as string, file.name);
-        };
-        reader.readAsText(file);
-      } else {
-        alert('Please drop a .md or .txt file only.');
+      const MAX_FILE_SIZE = 500_000; // 500 KB
+      if (file) {
+        if (file.size > MAX_FILE_SIZE) {
+          alert('File is too large. Max allowed size is 500KB.');
+          return;
+        }
+        if (file.name.endsWith('.md') || file.name.endsWith('.txt')) {
+          const reader = new FileReader();
+          reader.onload = () => {
+            handleFileRead(reader.result as string, file.name);
+          };
+          reader.readAsText(file, 'utf-8'); // Enforce UTF-8 encoding
+        } else {
+          alert('Please drop a .md or .txt file only.');
+        }
       }
     };
 
