@@ -1,6 +1,5 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "prismjs/themes/prism-okaidia.css"; /* Add this line for beautiful highlighting */
 
 @custom-variant dark (&:is(.dark *));
 
@@ -113,13 +112,6 @@
   --sidebar-ring: oklch(0.551 0.027 264.364);
 }
 
-.prose {
-  line-height: 1.75; /* Adjust as needed */
-  letter-spacing: -0.01em; /* Slight kerning adjustment */
-}
-.font-kr, .font-jp, .font-sc {
-  line-height: 1.6; /* Tighter line height for CJK languages */
-}
 
 @layer base {
   * {
@@ -129,10 +121,14 @@
     @apply bg-background text-foreground;
   }
 
-  pre {
-    @apply bg-gray-800 text-white p-4 my-4 rounded-lg overflow-x-auto;
-  }
-  code {
-    @apply font-mono text-sm;
-  }
+ /* Shiki-specific styles */
+ .shiki {
+  background: transparent !important; /* Override Shiki's default background */
+}
+pre {
+  @apply bg-muted text-foreground p-4 my-4 rounded-lg overflow-x-auto;
+}
+code {
+  @apply font-mono text-sm;
+}
 }

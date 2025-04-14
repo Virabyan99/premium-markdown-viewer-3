@@ -21,24 +21,27 @@ export default function HomePage() {
   const selectedFile = files.find((file) => file.id === selectedFileId);
 
   useEffect(() => {
-    if (!selectedFile) {
-      setLexicalJson(null);
-      return;
-    }
-    setLexicalJson(null); // Clear previous content
-    setLoading(true);
-    setError(null);
-    try {
-      const ast = parseMarkdownToAst(selectedFile.content);
-      const json = mdastToLexicalJson(ast);
-      console.log('Generated JSON length:', json.length);
-      setLexicalJson(json);
-    } catch (err) {
-      console.error('Error processing Markdown:', err);
-      setError('Failed to process Markdown');
-    } finally {
-      setLoading(false);
-    }
+    const processFile = async () => {
+      if (!selectedFile) {
+        setLexicalJson(null);
+        return;
+      }
+      setLexicalJson(null); // Clear previous content
+      setLoading(true);
+      setError(null);
+      try {
+        const ast = parseMarkdownToAst(selectedFile.content);
+        const json = await mdastToLexicalJson(ast); // Await the Promise
+        console.log('Generated JSON length:', json.length);
+        setLexicalJson(json); // Set the resolved string
+      } catch (err) {
+        console.error('Error processing Markdown:', err);
+        setError('Failed to process Markdown');
+      } finally {
+        setLoading(false);
+      }
+    };
+    processFile(); // Execute the async function
   }, [selectedFile]);
 
   const handleFileRead = async (content: string, filename: string) => {
@@ -84,7 +87,7 @@ export default function HomePage() {
           return;
         }
         if (file.name.endsWith('.md') || file.name.endsWith('.txt')) {
-          clearSelectedFile(); // Clear the current selected file before processing the new one
+          clearSelectedFile(); // Clear the current selected file
           const reader = new FileReader();
           reader.onload = () => {
             handleFileRead(reader.result as string, file.name);

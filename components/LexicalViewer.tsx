@@ -13,16 +13,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DecoratorNode, LexicalNode, NodeKey } from 'lexical';
 import { CustomTextNode } from './CustomTextNode';
 
-// PrismCodeNode (unchanged)
-export class PrismCodeNode extends DecoratorNode<React.ReactNode> {
+// ShikiCodeNode definition
+export class ShikiCodeNode extends DecoratorNode<React.ReactNode> {
   __html: string;
 
   static getType(): string {
-    return 'prism-code';
+    return 'shiki-code';
   }
 
-  static clone(node: PrismCodeNode): PrismCodeNode {
-    return new PrismCodeNode(node.__html, node.__key);
+  static clone(node: ShikiCodeNode): ShikiCodeNode {
+    return new ShikiCodeNode(node.__html, node.__key);
   }
 
   constructor(html: string, key?: NodeKey) {
@@ -44,19 +44,20 @@ export class PrismCodeNode extends DecoratorNode<React.ReactNode> {
     return <div dangerouslySetInnerHTML={{ __html: this.__html }} />;
   }
 
-  static importJSON(serializedNode: any): PrismCodeNode {
-    return $createPrismCodeNode(serializedNode.html);
+  static importJSON(serializedNode: any): ShikiCodeNode {
+    return $createShikiCodeNode(serializedNode.html);
   }
 }
 
-export function $createPrismCodeNode(html: string): PrismCodeNode {
-  return new PrismCodeNode(html);
+export function $createShikiCodeNode(html: string): ShikiCodeNode {
+  return new ShikiCodeNode(html);
 }
 
-export function $isPrismCodeNode(node: LexicalNode | null | undefined): node is PrismCodeNode {
-  return node instanceof PrismCodeNode;
+export function $isShikiCodeNode(node: LexicalNode | null | undefined): node is ShikiCodeNode {
+  return node instanceof ShikiCodeNode;
 }
 
+// Theme configuration
 const theme = {
   paragraph: 'mb-4',
   heading: { h1: 'text-3xl font-bold mb-4', h2: 'text-2xl font-semibold mb-3' },
@@ -71,7 +72,6 @@ function Page({ pageJson }: { pageJson: string }) {
     const updateEditorState = () => {
       try {
         const state = editor.parseEditorState(pageJson);
-        // Check if the state is empty
         if (state.isEmpty()) {
           console.warn('Parsed editor state is empty. Skipping update.');
           return;
@@ -95,7 +95,6 @@ function Page({ pageJson }: { pageJson: string }) {
   );
 }
 
-// Rest of LexicalViewer remains unchanged
 export default function LexicalViewer({ json }: { json: string }) {
   const [currentPage, setCurrentPage] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -105,7 +104,6 @@ export default function LexicalViewer({ json }: { json: string }) {
   let parsedState;
   try {
     parsedState = JSON.parse(json);
-    // Check if the entire JSON is empty
     if (parsedState.root.children.length === 0) {
       return (
         <Card>
@@ -140,11 +138,8 @@ export default function LexicalViewer({ json }: { json: string }) {
 
     const visibleCount = end - start;
     if (visibleCount < 5) {
-      if (start === 0) {
-        end = Math.min(5, pageCount);
-      } else if (end === pageCount) {
-        start = Math.max(0, pageCount - 5);
-      }
+      if (start === 0) end = Math.min(5, pageCount);
+      else if (end === pageCount) start = Math.max(0, pageCount - 5);
     }
     return Array.from({ length: end - start }, (_, i) => start + i);
   };
@@ -190,7 +185,6 @@ export default function LexicalViewer({ json }: { json: string }) {
               root: { ...parsedState.root, children: pageNodes },
             });
 
-            // Check if the page has no nodes
             if (pageNodes.length === 0) {
               return (
                 <div
@@ -215,7 +209,7 @@ export default function LexicalViewer({ json }: { json: string }) {
                   initialConfig={{
                     namespace: `Page${idx}`,
                     theme,
-                    nodes: [HeadingNode, ListNode, ListItemNode, PrismCodeNode, CustomTextNode],
+                    nodes: [HeadingNode, ListNode, ListItemNode, ShikiCodeNode, CustomTextNode],
                     editable: false,
                     onError: console.error,
                   }}
