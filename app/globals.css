@@ -126,7 +126,7 @@
   background: transparent !important; /* Override Shiki's default background */
 }
 pre {
-  @apply bg-muted text-foreground p-4 my-4 rounded-lg overflow-x-auto;
+  @apply bg-muted text-foreground p-3 my-4 rounded-lg overflow-x-auto;
 }
 code {
   @apply font-mono text-sm;
