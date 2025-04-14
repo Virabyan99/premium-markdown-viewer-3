@@ -1,3 +1,4 @@
+// components/LexicalViewer.tsx
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
@@ -10,7 +11,7 @@ import { HeadingNode } from '@lexical/rich-text';
 import { ListNode, ListItemNode } from '@lexical/list';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DecoratorNode, LexicalNode, NodeKey } from 'lexical';
-import { CustomTextNode } from './CustomTextNode'; // Import the custom node
+import { CustomTextNode } from './CustomTextNode';
 
 // PrismCodeNode (unchanged)
 export class PrismCodeNode extends DecoratorNode<React.ReactNode> {
@@ -65,17 +66,25 @@ const theme = {
 
 function Page({ pageJson }: { pageJson: string }) {
   const [editor] = useLexicalComposerContext();
-  const isMounted = useRef(false);
 
-  if (!isMounted.current) {
-    try {
-      const state = editor.parseEditorState(pageJson);
-      editor.setEditorState(state);
-      isMounted.current = true;
-    } catch (error) {
-      console.error('Error setting page state:', error);
-    }
-  }
+  useEffect(() => {
+    const updateEditorState = () => {
+      try {
+        const state = editor.parseEditorState(pageJson);
+        // Check if the state is empty
+        if (state.isEmpty()) {
+          console.warn('Parsed editor state is empty. Skipping update.');
+          return;
+        }
+        editor.setEditorState(state);
+      } catch (error) {
+        console.error('Error setting page state:', error);
+      }
+    };
+
+    const rafId = requestAnimationFrame(updateEditorState);
+    return () => cancelAnimationFrame(rafId);
+  }, [editor, pageJson]);
 
   return (
     <RichTextPlugin
@@ -86,17 +95,27 @@ function Page({ pageJson }: { pageJson: string }) {
   );
 }
 
+// Rest of LexicalViewer remains unchanged
 export default function LexicalViewer({ json }: { json: string }) {
   const [currentPage, setCurrentPage] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const pageRefs = useRef<(HTMLDivElement | null)[]>([]);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
-  
-
   let parsedState;
   try {
     parsedState = JSON.parse(json);
+    // Check if the entire JSON is empty
+    if (parsedState.root.children.length === 0) {
+      return (
+        <Card>
+          <CardHeader>
+            <CardTitle>Preview</CardTitle>
+          </CardHeader>
+          <CardContent>No content to display</CardContent>
+        </Card>
+      );
+    }
   } catch (error) {
     console.error('Failed to parse JSON:', error);
     return (
@@ -127,14 +146,11 @@ export default function LexicalViewer({ json }: { json: string }) {
         start = Math.max(0, pageCount - 5);
       }
     }
-
     return Array.from({ length: end - start }, (_, i) => start + i);
   };
 
   const initialVisiblePages = Array.from({ length: Math.min(3, pageCount) }, (_, i) => i);
   const [visiblePages, setVisiblePages] = useState<number[]>(initialVisiblePages);
-
-  
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -147,7 +163,7 @@ export default function LexicalViewer({ json }: { json: string }) {
           }
         });
       },
-      { root: containerRef.current, threshold: 0.5 }
+      { root: containerRef.current, threshold: 0.2 }
     );
     observerRef.current = observer;
 
@@ -173,6 +189,21 @@ export default function LexicalViewer({ json }: { json: string }) {
             const pageJson = JSON.stringify({
               root: { ...parsedState.root, children: pageNodes },
             });
+
+            // Check if the page has no nodes
+            if (pageNodes.length === 0) {
+              return (
+                <div
+                  key={idx}
+                  ref={(el) => (pageRefs.current[idx] = el)}
+                  data-page={idx}
+                  className="transition-opacity duration-300"
+                >
+                  <p>No content on this page</p>
+                </div>
+              );
+            }
+
             return (
               <div
                 key={idx}
@@ -184,7 +215,7 @@ export default function LexicalViewer({ json }: { json: string }) {
                   initialConfig={{
                     namespace: `Page${idx}`,
                     theme,
-                    nodes: [HeadingNode, ListNode, ListItemNode, PrismCodeNode, CustomTextNode], // Add CustomTextNode
+                    nodes: [HeadingNode, ListNode, ListItemNode, PrismCodeNode, CustomTextNode],
                     editable: false,
                     onError: console.error,
                   }}

@@ -1,3 +1,4 @@
+// page.tsx
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -10,12 +11,12 @@ import { useFileStore } from '@/lib/store';
 import Sidebar from '@/components/Sidebar';
 
 export default function HomePage() {
-  const { files, selectedFileId, addFile, selectFile } = useFileStore();
+  const { files, selectedFileId, addFile, selectFile, clearSelectedFile } = useFileStore();
   const [lexicalJson, setLexicalJson] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isDragging, setIsDragging] = useState(false); // State for drag feedback
-  const mainRef = useRef<HTMLDivElement>(null); // Ref for the main element
+  const [isDragging, setIsDragging] = useState(false);
+  const mainRef = useRef<HTMLDivElement>(null);
 
   const selectedFile = files.find((file) => file.id === selectedFileId);
 
@@ -24,7 +25,7 @@ export default function HomePage() {
       setLexicalJson(null);
       return;
     }
-    setLexicalJson(null); // Explicitly clear previous content
+    setLexicalJson(null); // Clear previous content
     setLoading(true);
     setError(null);
     try {
@@ -40,13 +41,12 @@ export default function HomePage() {
     }
   }, [selectedFile]);
 
-  // Handle file read for both click and drop uploads
   const handleFileRead = async (content: string, filename: string) => {
     try {
       console.log('Processing new file:', filename);
       const id = await addFile({ filename, content, id: undefined });
       console.log('File added with ID:', id);
-      selectFile(id); // Immediately select the new file
+      selectFile(id);
       console.log('Selected file ID set to:', id);
     } catch (err) {
       console.error('Error adding file:', err);
@@ -54,7 +54,6 @@ export default function HomePage() {
     }
   };
 
-  // Set up drag-and-drop event listeners on the main element
   useEffect(() => {
     const mainElement = mainRef.current;
     if (!mainElement) return;
@@ -66,7 +65,7 @@ export default function HomePage() {
 
     const handleDragOver = (e: DragEvent) => {
       e.preventDefault();
-      e.dataTransfer.dropEffect = 'copy'; // Indicate that dropping will copy the file
+      e.dataTransfer.dropEffect = 'copy';
     };
 
     const handleDragLeave = (e: DragEvent) => {
@@ -85,31 +84,30 @@ export default function HomePage() {
           return;
         }
         if (file.name.endsWith('.md') || file.name.endsWith('.txt')) {
+          clearSelectedFile(); // Clear the current selected file before processing the new one
           const reader = new FileReader();
           reader.onload = () => {
             handleFileRead(reader.result as string, file.name);
           };
-          reader.readAsText(file, 'utf-8'); // Enforce UTF-8 encoding
+          reader.readAsText(file, 'utf-8');
         } else {
           alert('Please drop a .md or .txt file only.');
         }
       }
     };
 
-    // Attach event listeners
     mainElement.addEventListener('dragenter', handleDragEnter);
     mainElement.addEventListener('dragover', handleDragOver);
     mainElement.addEventListener('dragleave', handleDragLeave);
     mainElement.addEventListener('drop', handleDrop);
 
-    // Cleanup event listeners on unmount
     return () => {
       mainElement.removeEventListener('dragenter', handleDragEnter);
       mainElement.removeEventListener('dragover', handleDragOver);
       mainElement.removeEventListener('dragleave', handleDragLeave);
       mainElement.removeEventListener('drop', handleDrop);
     };
-  }, [handleFileRead]);
+  }, [handleFileRead, clearSelectedFile]);
 
   return (
     <main
